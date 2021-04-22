@@ -29,8 +29,10 @@ public class Boardv2 {
     private int blankX;
     private int blankY;
     private int Blank; //Will be using this since we will only have 1 blank for the time being
+    private int lastX = -1;
+    private int lastY = -1;
 
-    public int[][] board;
+    public int[][] board; //This is the board
 
     /**No arg constructor*/
     public Boardv2() {
@@ -40,9 +42,9 @@ public class Boardv2 {
         board = new int[n][n];
 
         ArrayList<Integer> tempBoard = new ArrayList<Integer>(Arrays.asList( //Default board
-                5, 3, 7,
-                1, 4, 8,
-                2, 6, 0
+                0, 1, 2,
+                5, 6, 3,
+                4, 7, 8
         ));
 
         Piece temp; //temp piece to store newest piece to check if it is 0
@@ -70,7 +72,12 @@ public class Boardv2 {
         height = num;
         board = new int[n][n];
 
-        setupBoard();
+        int temp = 1;
+
+        while (temp % 2 == 1) {
+            setupBoard();
+            temp = getInversionCount();
+        }
 
 
         return;
@@ -135,7 +142,7 @@ public class Boardv2 {
     /**Display board*/
     public void displayBoard() {
         for (int i = 0; i < n; i++) {
-            System.out.print("----"); //Bring top row
+            System.out.print("-----"); //Bring top row
         }
 
         System.out.println();
@@ -144,27 +151,27 @@ public class Boardv2 {
 
             System.out.print("|");
             for (int i = 0; i < n; i++) {
-                System.out.print("   |");
+                System.out.print("    |");
             }
 
             System.out.println();
 
             System.out.print("|");
             for (int x = 0; x < n; x++) {
-                System.out.print(" " + (board[x][y] == 0 ? " " : board[x][y]) + " |");
+                System.out.print(" " + (board[x][y] == 0 ? "  " : (board[x][y] > 9 ? board[x][y] : (" " + board[x][y]))) + " |");
             }
 
             System.out.println();
 
             System.out.print("|");
             for (int i = 0; i < n; i++) {
-                System.out.print("   |");
+                System.out.print("    |");
             }
 
             System.out.println();
 
             for (int i = 0; i < n; i++) {
-                System.out.print("----"); //Bring top row
+                System.out.print("-----"); //Bring top row
             }
 
             System.out.println();
@@ -175,6 +182,8 @@ public class Boardv2 {
     /**Swap two pieces on the board*/
     public void swapPieces(int newX, int newY) {
 
+        lastX = blankX;
+        lastY = blankY;
         board[blankX][blankY] = board[newX][newY];
         board[newX][newY] = 0;
         blankX = newX;
@@ -218,22 +227,22 @@ public class Boardv2 {
 
 
         //If not on left
-        if (blankX != 0) {
+        if (blankX != 0 && (lastX != blankX-1)) {
             temp.add(potentialSwap(blankX-1, blankY));
         }
 
         //If not on the right
-        if (blankX != length-1) {
+        if (blankX != length-1 && (lastX != blankX+1)) {
             temp.add(potentialSwap(blankX+1, blankY));
         }
 
         //If not on bottom
-        if (blankY != 0) {
+        if (blankY != 0 && (lastY != blankY-1)) {
             temp.add(potentialSwap(blankX, blankY-1));
         }
 
         //If not on top
-        if (blankY != height-1) {
+        if (blankY != height-1 && (lastY != blankY+1)) {
             temp.add(potentialSwap(blankX, blankY+1));
         }
 
@@ -243,17 +252,76 @@ public class Boardv2 {
 
     }
 
+    /**Gets inversion count to see if sovlable*/
+    public int getInversionCount() {
+
+        int count = 0;
+        int temp, temp2;
+
+        for(int y = n - 1; y >= 0; y--) {
+            for (int x = 0; x < n; x++) {
+
+                temp = board[x][y];
+                temp2 = x;
+
+                for(int i = y; i >= 0; i--) {
+                    for (int j = temp2; j < n; j++) {
+
+                        if(temp > board[j][i] && board[j][i] != 0) {count++;}
+                    }
+                    temp2 = 0;
+                }
+
+            }
+        }
+
+        return count;
+    }
+
+    public static void test(int depth, Boardv2 currentBoard) {
+
+        if (depth == 0) { return; }
+
+        for(int i = 0; i < currentBoard.possibleMoves().size(); i++) {
+
+            if (currentBoard.board[0][2] == 1 && currentBoard.board[1][2] == 2 && currentBoard.board[2][2] == 3
+            && currentBoard.board[0][1] == 4 && currentBoard.board[1][1] == 5 && currentBoard.board[2][1] == 6
+            && currentBoard.board[0][0] == 7 && currentBoard.board[1][0] == 8){
+                currentBoard.displayBoard();
+            }
+
+
+            test(depth-1, currentBoard.possibleMoves().get(i));
+        }
+
+        return;
+
+
+    }
+
 
     public static void main(String[] args) {
-        Boardv2 test = new Boardv2();
+        Boardv2 test = new Boardv2(3);
 
         test.displayBoard();
 
-        ArrayList<Boardv2> possibilities = test.possibleMoves();
+        test(25, test);
 
-        possibilities.get(0).displayBoard();
-        possibilities.get(1).displayBoard();
-        test.displayBoard();
+        System.out.println("All done");
+
+
+//
+//        ArrayList<Boardv2> possibilities = test.possibleMoves();
+//
+//        possibilities.get(0).displayBoard();
+//
+//
+//        for(int i = 0; i < possibilities.get(0).possibleMoves().size(); i++) {
+//            possibilities.get(0).possibleMoves().get(i).displayBoard();
+//        }
+//        //possibilities.get(0).possibleMoves().get(0).displayBoard();
+//
+//        test.displayBoard();
 
 
 
