@@ -309,6 +309,8 @@ public class Boardv2 {
 
         System.out.println("All done");
 
+        int[][] goal = new int[][]{ {7,8,0}, {4,5,6}, {1,2,3} };
+
 
 //
 //        ArrayList<Boardv2> possibilities = test.possibleMoves();
