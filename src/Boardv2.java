@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.lang.Math;
 
 //TODO: ISSUE, OBJECTS ARE COPIED BY REFERENCE IN JAVA, NOT VALUE
 public class Boardv2 {
@@ -299,13 +300,75 @@ public class Boardv2 {
 
     }
 
+    public int val(int num, int[][] goal) {
+       int indexX = -1;
+       int indexY = -1;
+       int goalX = -1;
+       int goalY = -1;
+       int score = 0;
+
+       for (int i = 0; i < n; i++)
+       {
+           for (int j = 0; j < n; j++)
+           {
+               if (this.board[i][j] == num)
+               {
+                   indexX = j;
+                   indexY = i;
+               }
+           }
+       }
+
+       for (int i = 0; i < n; i++)
+       {
+           for (int j = 0; j < n; j++)
+           {
+               if (goal[i][j] == num)
+               {
+                   goalX = i;
+                   goalY = j;
+               }
+           }
+
+       }
+
+        score = (Math.abs(indexX - goalX) + Math.abs(indexY - goalY));
+        return score;
+    }
+
+    public int rowVal(int num, int[][] goal) {
+        int score = 0;
+        int index = (n * n) - (n * num);
+        for (int i = index; i >= index - n + 1; i--)
+        {
+            score += val(i, goal);
+        }
+        return score;
+    }
+
+
+    public int colVal(int num, int[][] goal) {
+        int score = 0;
+        for (int i = num + 1; i <= (num + 1) + (n * (n - 1)); i += n)
+        {
+            score += val(i, goal);
+        }
+        return score;
+    }
+
+    public int boardVal(int[][] goal) {
+        int score = 0;
+        for (int i = 0; i < n; i++)
+            score += colVal(i, goal);
+        return score;
+    }
+
 
     public static void main(String[] args) {
         Boardv2 test = new Boardv2(3);
 
         test.displayBoard();
-
-        test(25, test);
+//        test(25, test);
 
         System.out.println("All done");
 
@@ -324,12 +387,6 @@ public class Boardv2 {
 //        //possibilities.get(0).possibleMoves().get(0).displayBoard();
 //
 //        test.displayBoard();
-
-
-
-
-
-
 
 
     }
