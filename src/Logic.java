@@ -2,11 +2,16 @@ import java.util.ArrayList;
 
 public class Logic {
 
-    public int[][] goal = new int[][]{ {7,8,0}, {4,5,6}, {1,2,3} };
+    public int topRowScore = 100000;
+
+//    public int[][] goal = new int[][]{ {7,8,0}, {4,5,6}, {1,2,3} };
+    public int[][] goal;
     public static int n;
     public static boolean endSearch = false;
     public int count = 0;
     public Boardv2 board;
+    public Boardv2 bestBoard;
+    public int totalMoves = 0;
 
 
 
@@ -39,9 +44,10 @@ public class Logic {
 
 
 
-        for(int y = n - 1; y >= 0; y--) {
-            for(int x = 0; x < n; x++) {
+        for(int x = n - 1; x >= 0; x--) {
+            for(int y = 0; y < n; y++) {
                 temp[x][y] = tempArray.get(0);
+                //System.out.println("(" + x + ", " + y+ "): " + temp[x][y] + "    goal: " +goal[x][y]);
                 tempArray.remove(0);
             }
         }
@@ -51,134 +57,84 @@ public class Logic {
         return temp;
     }
 
-    /**See if a the top row is complete, if so decrement the height*/
-    public boolean isRowDone (Boardv2 currentBoard) {
 
-        int height = currentBoard.getHeight();
-        int length = currentBoard.getLength();
-        boolean isItDone = true;
 
-        //See if the top most row is correct
-        while (length >= 1 && isItDone) {
-            if (currentBoard.board[n - length][height - 1] != goal[n - length][height - 1]) {isItDone = false;}
-            length--;
+    /**Looks through all possible moves, sets best board as the global var*/
+    public void rowPointsSearch(int depth, Boardv2 currentBoard) {
+
+
+        int topRow = currentBoard.getHeight() - 1;
+
+        //If the board's top row has the best score
+        //System.out.println(topRowScore + " > " + currentBoard.rowVal(topRow, goal));
+        if(currentBoard.rowVal(topRow, goal) < topRowScore) {
+            topRowScore = currentBoard.rowVal(topRow, goal);
+            bestBoard = currentBoard;
         }
 
-        //The row is complete
-        if (isItDone) {
-            currentBoard.setHeight(currentBoard.getHeight() - 1);
-            return true;
+        //If this board is tied with the best, does it have less parents?
+        if((currentBoard.rowVal(topRow, goal) == topRowScore) && (currentBoard.numParents < bestBoard.numParents)) {
+            bestBoard = currentBoard;
         }
 
+        //If depth hits 0 or if the board is too far off from the best
+        if (depth == 0 || currentBoard.rowVal(topRow, goal) > topRowScore + 2) {return;}
 
 
-        //It is not done
-        return false;
-    }
-
-    /**See if a the left col is complete, if so decrement the length*/
-    public boolean isColDone (Boardv2 currentBoard) {
-
-        int height = currentBoard.getHeight();
-        int length = currentBoard.getLength();
-        boolean isItDone = true;
-
-        //See if the top most row is correct
-        while (height >= 1 && isItDone) {
-            System.out.println(currentBoard.board[n - length][height - 1] + " != " + goal[n - length][height - 1]);
-            if (currentBoard.board[n - length][height - 1] != goal[n - length][height - 1]) {isItDone = false;}
-            height--;
-        }
-
-        //The row is complete
-        if (isItDone) {
-            currentBoard.setLength(currentBoard.getLength() - 1);
-            return true;
-        }
-
-
-
-        //It is not done
-        return false;
-    }
-
-
-    /**Row Only Depth Search*/
-    public void rowDepthSearch(int depth, Boardv2 currentBoard) {
-        if(endSearch) {return;} //End search if we are told to
-
-        //See if the board is done
-        if(isRowDone(currentBoard)) {
-
-            endSearch = true;
-
-            currentBoard.displayBoard();
-
-            System.out.println("The top row is complete");
-
-            board = currentBoard;
-
-        }
-
-        if (depth == 0) { return; } //Search has maxed out
 
         ArrayList<Boardv2> temp = currentBoard.possibleMoves();
 
         for(int i = 0; i < temp.size(); i++) {
-            rowDepthSearch(depth-1, temp.get(i));
+            rowPointsSearch(depth-1, temp.get(i));
         }
 
         return;
-
     }
 
-
-    /**Col Only Depth Search*/
-    public void colDepthSearch(int depth, Boardv2 currentBoard) {
-        if(endSearch) {return;} //End search if we are told to
-
-        //See if the board is done
-        if(isColDone(currentBoard)) {
-
-            endSearch = true;
-
-            currentBoard.displayBoard();
-
-            System.out.println("The left col is complete");
-
-            board = currentBoard;
+    /**Looks through all possible moves, sets best board as the global var*/
+    public void colPointsSearch(int depth, Boardv2 currentBoard) {
 
 
+        int leftCol = n - currentBoard.getLength();
+
+        //If the board's top row has the best score
+        //System.out.println(topRowScore + " > " + currentBoard.colVal(leftCol, goal));
+        if(currentBoard.colVal(leftCol, goal) < topRowScore) {
+            topRowScore = currentBoard.colVal(leftCol, goal);
+            bestBoard = currentBoard;
         }
 
-        if (depth == 0) { return; } //Search has maxed out
+        //If this board is tied with the best, does it have less parents?
+        if((currentBoard.colVal(leftCol, goal) == topRowScore) && (currentBoard.numParents < bestBoard.numParents)) {
+            bestBoard = currentBoard;
+        }
+
+        //If depth hits 0 or if the board is too far off from the best
+        if (depth == 0 || currentBoard.colVal(leftCol, goal) > topRowScore + 2) {return;}
+
+
+
+
 
         ArrayList<Boardv2> temp = currentBoard.possibleMoves();
 
         for(int i = 0; i < temp.size(); i++) {
-            colDepthSearch(depth-1, temp.get(i));
+            colPointsSearch(depth-1, temp.get(i));
         }
 
         return;
-
     }
+
+
 
     /**Depth Search*/
     public void depthSearch(int depth, Boardv2 currentBoard) {
 
         if(endSearch) {return;}
 
-        boolean shortCircuit = true;
 
-        for(int y = n - 1; y >= 0 && shortCircuit; y--) { //See if we are solved / Pruning time
-            for (int x = 0; x < n && shortCircuit; x++) {
 
-                if (currentBoard.board[x][y] != goal[x][y])
-                    shortCircuit = false;
-            }
-        }
-
-        if(shortCircuit) {currentBoard.displayBoard(); System.out.println("Solved"); endSearch = true; count++; return;} //Solved board
+        if(currentBoard.boardVal(goal) == 0) {bestBoard = currentBoard; endSearch = true; return;} //Solved board
 
         if (depth == 0) { return; } //Base return statement / Pruning time
 
@@ -193,48 +149,121 @@ public class Logic {
 
     }
 
+    /**Display all boards*/
+    public void displayAllBoards (Boardv2 currentBoard) {
+
+        ArrayList<Boardv2> temp = new ArrayList<Boardv2>();
+
+        while (currentBoard != null) {
+
+            temp.add(currentBoard);
+            currentBoard = currentBoard.parentBoard;
+
+        }
+
+        temp.remove(0); //Gets rid of first board, since it will the newest parent board
+
+        totalMoves += temp.size();
+
+        for (int i = temp.size() - 1; i >= 0; i--) {
+            temp.get(i).displayBoard();
+
+//            try {
+//                TimeUnit.SECONDS.sleep(1);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+        }
+
+        return;
+    }
+
 
 
     public static void main(String[] args) {
 
 
-
+        int NUM = 5;
+        int depth = 16;
 
         Logic logicTest = new Logic();
-        int[][] goal = logicTest.generateGoal(5,1);
-        Boardv2 boardTest = new Boardv2(5);
-
-        boardTest.displayBoard();
+        int[][] goal = logicTest.generateGoal(NUM,1);
+        Boardv2 boardTest = new Boardv2(NUM);
 
 
-        while(boardTest.getHeight() > 2 && boardTest.getLength() > 2) {
-            if (boardTest.getHeight() == boardTest.getLength()) {
-                logicTest.rowDepthSearch(30, boardTest);
+
+        int topRow = boardTest.getHeight() - 1;
+        int leftCol = n - boardTest.getLength();
+
+        while(boardTest.getHeight() > 1 && boardTest.getLength() > 1) {
+
+            logicTest.topRowScore = 100000;
+            topRow = boardTest.getHeight() - 1;
+            leftCol = n - boardTest.getLength();
+
+            while (boardTest.rowVal(topRow, goal) != 0) {
+                logicTest.rowPointsSearch(depth, boardTest);
+                ////////////////////////////////
+                boardTest = logicTest.bestBoard;
+                logicTest.displayAllBoards(boardTest);
+                boardTest.parentBoard=null;
+                boardTest.numParents=0;
+                //////////////////////////////////
+//                System.out.println("Row: " + boardTest.rowVal(topRow, goal));
+//                boardTest.displayBoard();
+
             }
-            else {
-                logicTest.colDepthSearch(30, boardTest);
-            }
+            boardTest.setHeight(boardTest.getHeight() - 1);
 
-            boardTest = logicTest.board;
-            logicTest.endSearch = false;
+            logicTest.topRowScore = 100000;
+
+            while (boardTest.colVal(leftCol, goal) != 0) {
+                logicTest.colPointsSearch(depth, boardTest);
+                ///////////////////////////////
+                boardTest = logicTest.bestBoard;
+                logicTest.displayAllBoards(boardTest);
+                boardTest.parentBoard=null;
+                boardTest.numParents=0;
+                //////////////////////////////////
+//                System.out.println("Col: " + boardTest.colVal(leftCol, goal));
+//                boardTest.displayBoard();
+
+            }
+            boardTest.setLength(boardTest.getLength() - 1);
+
+        }
+
+        logicTest.topRowScore = 100000;
+        topRow = boardTest.getHeight() - 1;
+
+        while (boardTest.rowVal(topRow, goal) != 0) {
+            logicTest.rowPointsSearch(depth, boardTest);
+            boardTest = logicTest.bestBoard;
 
 
         }
 
-        logicTest.endSearch = false;
-        logicTest.depthSearch(30, boardTest);
 
 
 
-//        for(int i = 0; i < 10; i++) {
-//            Boardv2 boardTest = new Boardv2(3);
-//            boardTest.displayBoard();
-//            logicTest.depthSearch(30, boardTest);
-//            System.out.println(logicTest.count);
-//            logicTest.endSearch = false;
-//        }
-//
-//        System.out.print("FINAL COUNT: " + logicTest.count);
+        ////////////////////////////////
+        boardTest = logicTest.bestBoard;
+        logicTest.displayAllBoards(boardTest);
+        boardTest.parentBoard=null;
+        boardTest.numParents=0;
+        ///////////////////////////////////
+
+        boardTest.displayBoard();
+
+        System.out.println("----------------------");
+
+
+
+        System.out.println("Total Moves: " + logicTest.totalMoves);
+
+
+
+
 
     }
 

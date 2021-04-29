@@ -34,6 +34,8 @@ public class Boardv2 {
     private int lastY = -1;
 
     public int[][] board; //This is the board
+    public Boardv2 parentBoard; //Will store the parent, so we can get all boards in a chain.
+    public int numParents = 0; //Stores the number of parents
 
     /**No arg constructor*/
     public Boardv2() {
@@ -73,13 +75,33 @@ public class Boardv2 {
         height = num;
         board = new int[n][n];
 
-        int temp = 1;
 
-        while (temp % 2 == 1) {
-            setupBoard();
-            temp = getInversionCount();
+        if (n % 2 == 1) { //n is odd
+
+            int temp = 1;
+
+            while (temp % 2 == 1) {
+                setupBoard();
+                temp = getInversionCount();
+            }
         }
 
+        else { //n is even
+
+            int rowOfBlank;
+            int temp;
+
+            do {
+
+                setupBoard();
+                rowOfBlank = blankY + 1;
+                temp = getInversionCount();
+
+
+
+
+            }while((rowOfBlank % 2) == (temp % 2));
+        }
 
         return;
     }
@@ -217,6 +239,8 @@ public class Boardv2 {
         temp.setBlankX(blankX);
         temp.setBlankY(blankY);
 
+        temp.parentBoard = this; //Copy the parent board to this new board
+
         return temp;
     }
 
@@ -228,12 +252,12 @@ public class Boardv2 {
 
 
         //If not on left
-        if (blankX != 0 && (lastX != blankX-1)) {
+        if (blankX != n - length && (lastX != blankX-1)) {
             temp.add(potentialSwap(blankX-1, blankY));
         }
 
         //If not on the right
-        if (blankX != length-1 && (lastX != blankX+1)) {
+        if (blankX != n-1 && (lastX != blankX+1)) {
             temp.add(potentialSwap(blankX+1, blankY));
         }
 
@@ -246,7 +270,6 @@ public class Boardv2 {
         if (blankY != height-1 && (lastY != blankY+1)) {
             temp.add(potentialSwap(blankX, blankY+1));
         }
-
 
 
         return temp;
@@ -279,26 +302,6 @@ public class Boardv2 {
         return count;
     }
 
-    public static void test(int depth, Boardv2 currentBoard) {
-
-        if (depth == 0) { return; }
-
-        for(int i = 0; i < currentBoard.possibleMoves().size(); i++) {
-
-            if (currentBoard.board[0][2] == 1 && currentBoard.board[1][2] == 2 && currentBoard.board[2][2] == 3
-            && currentBoard.board[0][1] == 4 && currentBoard.board[1][1] == 5 && currentBoard.board[2][1] == 6
-            && currentBoard.board[0][0] == 7 && currentBoard.board[1][0] == 8){
-                currentBoard.displayBoard();
-            }
-
-
-            test(depth-1, currentBoard.possibleMoves().get(i));
-        }
-
-        return;
-
-
-    }
 
     public int val(int num, int[][] goal) {
        int indexX = -1;
@@ -365,28 +368,6 @@ public class Boardv2 {
 
 
     public static void main(String[] args) {
-        Boardv2 test = new Boardv2(3);
-
-        test.displayBoard();
-//        test(25, test);
-
-        System.out.println("All done");
-
-        int[][] goal = new int[][]{ {7,8,0}, {4,5,6}, {1,2,3} };
-
-
-//
-//        ArrayList<Boardv2> possibilities = test.possibleMoves();
-//
-//        possibilities.get(0).displayBoard();
-//
-//
-//        for(int i = 0; i < possibilities.get(0).possibleMoves().size(); i++) {
-//            possibilities.get(0).possibleMoves().get(i).displayBoard();
-//        }
-//        //possibilities.get(0).possibleMoves().get(0).displayBoard();
-//
-//        test.displayBoard();
 
 
     }
