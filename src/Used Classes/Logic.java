@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class Logic {
 
@@ -73,7 +75,7 @@ public class Logic {
         }
 
         //If this board is tied with the best, does it have less parents?
-        if((currentBoard.rowVal(topRow, goal) == topRowScore) && (currentBoard.numParents < bestBoard.numParents)) {
+        else if((currentBoard.rowVal(topRow, goal) == topRowScore) && (currentBoard.numParents < bestBoard.numParents)) {
             bestBoard = currentBoard;
         }
 
@@ -105,7 +107,7 @@ public class Logic {
         }
 
         //If this board is tied with the best, does it have less parents?
-        if((currentBoard.colVal(leftCol, goal) == topRowScore) && (currentBoard.numParents < bestBoard.numParents)) {
+        else if((currentBoard.colVal(leftCol, goal) == topRowScore) && (currentBoard.numParents < bestBoard.numParents)) {
             bestBoard = currentBoard;
         }
 
@@ -168,11 +170,11 @@ public class Logic {
         for (int i = temp.size() - 1; i >= 0; i--) {
             temp.get(i).displayBoard();
 
-//            try {
-//                TimeUnit.SECONDS.sleep(1);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         return;
@@ -183,13 +185,33 @@ public class Logic {
     public static void main(String[] args) {
 
 
-        int NUM = 5;
+        int NUM = 3;
         int depth = 16;
+
+        System.out.println("Welcome to the sliding puzzle solver! We hope you enjoy your stay!");
+        System.out.print("What N by N puzzle would you like?: ");
+
+        Scanner input = new Scanner(System.in);
+
+        NUM = input.nextInt();
+
+
 
         Logic logicTest = new Logic();
         int[][] goal = logicTest.generateGoal(NUM,1);
         Boardv2 boardTest = new Boardv2(NUM);
 
+        boardTest.displayBoard();
+        System.out.print("This is the board, press enter to start solving");
+
+        try
+        {
+            System.in.read();
+        }
+        catch(Exception e)
+        {}
+
+        System.out.print("\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
 
         int topRow = boardTest.getHeight() - 1;
